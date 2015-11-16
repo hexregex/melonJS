@@ -122,6 +122,8 @@ THE SOFTWARE.
       if (!this || this.constructor !== Collection) return new Collection(a);
       this._keys = [];
       this._values = [];
+      // melonJS : used to optimize the get and set function
+      this._hash = {};
       this._itp = []; // iteration pointers
       this.objectOnly = objectOnly;
 
@@ -158,22 +160,34 @@ THE SOFTWARE.
   /** delete */
   function sharedDelete(key) {
     if (this.has(key)) {
-      this._keys.splice(i, 1);
-      this._values.splice(i, 1);
-      // update iteration pointers
-      this._itp.forEach(function(p) { if (i < p[0]) p[0]--; });
+      if (typeof(key) === "string" || (typeof(key) === "number" && key)) {
+        this._hash[key] = undefined;
+        return true;
+      } else {
+        this._keys.splice(i, 1);
+        this._values.splice(i, 1);
+        // update iteration pointers
+        this._itp.forEach(function(p) { if (i < p[0]) p[0]--; });
+      }
     }
     // Aurora here does it while Canary doesn't
     return -1 < i;
   }
 
   function sharedGet(key) {
-    return this.has(key) ? this._values[i] : undefined;
+    if (typeof(key) === "string" || typeof(key) === "number" && key) {
+      return this._hash[key];
+    } else {
+      return this.has(key) ? this._values[i] : undefined;
+    }
   }
 
   function has(list, key) {
     if (this.objectOnly && key !== Object(key))
       throw new TypeError("Invalid value used as weak collection key");
+    if (typeof(key) === "string" || (typeof(key) === "number" && key)) {
+      return this._hash.hasOwnProperty(key);
+    }
     //NaN or 0 passed
     if (key != key || key === 0) for (i = list.length; i-- && !is(list[i], key);){}
     else i = list.indexOf(key);
@@ -190,11 +204,13 @@ THE SOFTWARE.
 
   /** @chainable */
   function sharedSet(key, value) {
-    this.has(key) ?
-      this._values[i] = value
-      :
-      this._values[this._keys.push(key) - 1] = value
-      ;
+    if (typeof(key) === "string" || (typeof(key) === "number" && key)) {
+      this._hash[key] = value;
+    } else if (this.has(key)) {
+      this._values[i] = value;
+    } else {
+      this._values[this._keys.push(key) - 1] = value;
+    }
     return this;
   }
 
@@ -207,19 +223,20 @@ THE SOFTWARE.
   function sharedClear() {
     (this._keys || 0).length =
     this._values.length = 0;
+    this._hash = {};
   }
 
   /** keys, values, and iterate related methods */
   function sharedKeys() {
-    return sharedIterator(this._itp, this._keys);
+    return sharedIterator(this._itp, this._keys.slice().concat(Object.keys(this._hash)));
   }
 
   function sharedValues() {
-    return sharedIterator(this._itp, this._values);
+    return sharedIterator(this._itp, this._values.slice().concat(Object.keys(this._hash)));
   }
 
   function mapEntries() {
-    return sharedIterator(this._itp, this._keys, this._values);
+    return sharedIterator(this._itp, this._keys.slice().concat(Object.keys(this._hash)), this._values.slice().concat(Object.keys(this._hash)));
   }
 
   function setEntries() {
@@ -245,7 +262,7 @@ THE SOFTWARE.
   }
 
   function sharedSize() {
-    return this._values.length;
+    return this._values.length + Object.keys(this._hash).length;
   }
 
   function sharedForEach(callback, context) {
