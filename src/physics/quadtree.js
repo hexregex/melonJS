@@ -1,6 +1,6 @@
 /*
  * MelonJS Game Engine
- * Copyright (C) 2011 - 2015, Olivier Biot, Jason Oster, Aaron McLeod
+ * Copyright (C) 2011 - 2016, Olivier Biot, Jason Oster, Aaron McLeod
  * http://www.melonjs.org
  *
  * A QuadTree implementation in JavaScript, a 2d spatial subdivision algorithm.
@@ -169,7 +169,10 @@
 
         for (var i = container.children.length, child; i--, (child = container.children[i]);) {
             if (child instanceof me.Container) {
-                // recursivly insert childs
+                if (child.name !== "rootContainer") {
+                    this.insert(child);
+                }
+                // recursivly insert all childs
                 this.insertContainer(child);
             } else {
                 // only insert object with a bounding box

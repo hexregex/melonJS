@@ -1,6 +1,6 @@
 /*
  * MelonJS Game Engine
- * Copyright (C) 2011 - 2015, Olivier Biot, Jason Oster, Aaron McLeod
+ * Copyright (C) 2011 - 2016, Olivier Biot, Jason Oster, Aaron McLeod
  * http://www.melonjs.org
  *
  */
@@ -221,7 +221,7 @@
             if (target instanceof me.Entity) {
                 this.target = target.pos;
             }
-            else if (target instanceof me.Vector2d) {
+            else if ((target instanceof me.Vector2d) || (target instanceof me.Vector3d))  {
                 this.target = target;
             }
             else {

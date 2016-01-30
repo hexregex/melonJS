@@ -1,6 +1,6 @@
 /*
  * MelonJS Game Engine
- * Copyright (C) 2011 - 2015, Olivier Biot, Jason Oster, Aaron McLeod
+ * Copyright (C) 2011 - 2016, Olivier Biot, Jason Oster, Aaron McLeod
  * http://www.melonjs.org
  *
  * Audio Mngt Objects
@@ -270,6 +270,31 @@
             var sound = audioTracks[sound_name];
             if (sound && typeof sound !== "undefined") {
                 sound.pause(instance_id);
+            }
+        };
+
+        /**
+         * resume the specified sound on all channels<br>
+         * @name resume
+         * @memberOf me.audio
+         * @public
+         * @function
+         * @param {String} sound_name audio clip name - case sensitive
+         * @param {Number} [id] the sound instance ID. If none is passed, all sounds in group will resume.
+         * @example
+         * // play a audio clip
+         * var id = me.audio.play("myClip");
+         * ...
+         * // pause it
+         * me.audio.pause("myClip", id);
+         * ...
+         * // resume
+         * me.audio.resume("myClip", id);
+         */
+        api.resume = function (sound_name, instance_id) {
+            var sound = audioTracks[sound_name];
+            if (sound && typeof sound !== "undefined") {
+                sound.play(instance_id);
             }
         };
 
